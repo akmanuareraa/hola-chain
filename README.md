@@ -1,2 +1,2 @@
 # hola-chain
- A Blockchain based Open Messaging Platform manged by Solidity Smart Contracts 
+ Basic Blockchain App, managed by Smart Contracts, that allows people to send 'wave' to anyone holding an Ethereum Address. 
