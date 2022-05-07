@@ -28,3 +28,18 @@
     transform: rotate(360deg);
   }
 }
+
+.home-logo {
+  height: 500px;
+  width: 500px;
+}
+
+.dash-logo {
+  height: 400px;
+  width: 400px;
+}
+
+.wave-icon {
+  height: 45px;
+  width: 45px;
+}

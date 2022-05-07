@@ -16,3 +16,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@font-face {
+  font-family: "Jost";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Jost-Regular"), url("../public/fonts/Jost/static/Jost-Regular.ttf") format("ttf")
+}
