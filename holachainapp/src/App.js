@@ -17,63 +17,97 @@ function App() {
     totalWaves: 0,
     totalWavers: 0,
     wrongChain: false,
+    metamaskStatus: null,
     userData: {
       sent: 0,
       received: 0
     }
   })
 
-  window.ethereum.on('accountsChanged', function () {
-    console.log('Metamask Accounts Changed')
-    setAppState(prevState => {
-      return {
-        ...prevState,
-        isWeb3: false,
-        dashboard: false,
-        totalWaves: 0,
-        totalWavers: 0,
-        userData: {
-          sent: 0,
-          received: 0
-        }
-      }
-    })
-  });
+  useEffect(() => {
 
-  window.ethereum.on('chainChanged', (_chainId) => {
-    console.log('Chain Changed', _chainId)
-    if (_chainId === '0x13881') {
-      setAppState(prevState => {
-        return {
-          ...prevState,
-          isWeb3: false,
-          dashboard: false,
-          totalWaves: 0,
-          totalWavers: 0,
-          wrongChain: false,
-          chainId: _chainId,
-          userData: {
-            sent: 0,
-            received: 0
+    console.log("UseEffect Checking Metamask Status")
+
+    if (window.ethereum) {
+
+      console.log("Metamask Installed")
+
+      if (!appState.metamaskStatus) {
+        setAppState(prevState => {
+          return {
+            ...prevState,
+            metamaskStatus: true
           }
+        })
+      }
+
+      window.ethereum.on('accountsChanged', function () {
+        console.log('Metamask Accounts Changed')
+        setAppState(prevState => {
+          return {
+            ...prevState,
+            isWeb3: false,
+            dashboard: false,
+            totalWaves: 0,
+            totalWavers: 0,
+            metamaskStatus: true,
+            userData: {
+              sent: 0,
+              received: 0
+            }
+          }
+        })
+      })
+
+      window.ethereum.on('chainChanged', (_chainId) => {
+        console.log('Chain Changed', _chainId)
+        if (_chainId === '0x13881') {
+          setAppState(prevState => {
+            return {
+              ...prevState,
+              isWeb3: false,
+              dashboard: false,
+              totalWaves: 0,
+              totalWavers: 0,
+              wrongChain: false,
+              chainId: _chainId,
+              metamaskStatus: true,
+              userData: {
+                sent: 0,
+                received: 0
+              }
+            }
+          })
+        } else {
+          setAppState(prevState => {
+            return {
+              ...prevState,
+              isWeb3: false,
+              dashboard: false,
+              totalWaves: 0,
+              totalWavers: 0,
+              wrongChain: true,
+              chainId: _chainId,
+              metamaskStatus: true,
+              userData: {
+                sent: 0,
+                received: 0
+              }
+            }
+          })
         }
       })
+
     } else {
-      setAppState(prevState => {
-        return {
-          ...prevState,
-          isWeb3: false,
-          dashboard: false,
-          totalWaves: 0,
-          totalWavers: 0,
-          wrongChain: true,
-          chainId: _chainId,
-          userData: {
-            sent: 0,
-            received: 0
+      console.log('Metamask not Installed')
+      if (appState.metamaskStatus !== false) {
+        setAppState(prevState => {
+          return {
+            ...prevState,
+            metamaskStatus: false
           }
-        }
-      })
+        })
+      }
     }
   })
 
@@ -168,20 +202,37 @@ function App() {
             chainId: ethereum.chainId
           }
         })
-        switchNetworkMumbai(web3,ethereum)
+        switchNetworkMumbai(web3, ethereum)
       })
     }
   };
 
-  const switchNetworkMumbai = (web3,ethereum) => {
-    web3.currentProvider
-      .request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x13881" }],
-      })
-      .then(function (resonse, error) {
-        if (error) alert(error.message);
-      })
+  const switchNetworkMumbai = async (web3, ethereum) => {
+    try {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x13881' }],
+      });
+    } catch (switchError) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0x13881',
+                chainName: 'Polygon Mumbai Testnet',
+                rpcUrls: ['https://matic-mumbai.chainstacklabs.com	'],
+              },
+            ],
+          });
+        } catch (addError) {
+          console.error('Error while adding new chain to MetaMask')
+        }
+      }
+      // handle other "switch" errors
+    }
     setAppState(prevState => {
       return {
         ...prevState,
